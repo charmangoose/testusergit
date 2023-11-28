@@ -29,5 +29,4 @@ back -> card: GET /by-login/{adLogin}
 return параметры сотрудника
 back --> front: 200 OK
 note over front: Продолжение бизнес сценария
-back --> front: Купил **вно
 @enduml
