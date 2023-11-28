@@ -1,0 +1,33 @@
+@startuml
+actor user as "Пользователь"
+participant epaa as "Шлюз EPA-AM"
+participant frkk as "Фасад ФРКК"
+participant front as "Front microservise"
+participant tyk as "TYK"
+participant back as "Backend microservice"
+participant trsm as "msonb-trsm-provider"
+participant card as "ОС Карточка сотрудника"
+
+autonumber
+== Авторизация на фасаде ФРКК ==
+user -> epaa: Авторизация для ФРКК
+return access_token
+user -> frkk: Переход на микрофронт СУБО
+frkk -> frkk: Сохранение access_token в Cookie
+frkk --> user: Перевод на микрофронт СУБО
+== Авторизация внутри СУБО ==
+user -> front: Тыкает на кнопочку
+front -> front: Берёт access_token из Cookie
+front -> tyk: HTTP REST- вызов {хост_TYKа}/{basepath}/{метод_API}\n{Cookie: access_token, Authorization: JWT}
+tyk -> tyk: token-exchange на Bearer JWT
+tyk -> back: HTTP REST вызов микросервиса через балансировщик
+back -> back: Парсинг jwt-токена, определение канала
+back -> back: Формирование объекта AuthRequest, запуск библиотеки
+back -> trsm: GET /api/v1/onb-trsm/authority?sub={sub}&msCode={msCode}&functionCode={functionCode}
+return HTTP 200
+back -> card: GET /by-login/{adLogin}
+return параметры сотрудника
+back --> front: 200 OK
+note over front: Продолжение бизнес сценария
+back --> front: Купил **вно
+@enduml
